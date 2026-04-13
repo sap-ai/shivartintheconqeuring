@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<style>
+canvas {
+    border:1px solid #d3d3d3;
+    background-color: #f1f1f1;
+}
+</style>
+</head>
+
+<body onload="startGame()">
+
+<script>
+let audioUnlocked = false;
+
+function sound(src) {
+  this.sound = document.createElement("audio");
+  this.sound.src = src;
+  this.sound.setAttribute("preload", "auto");
+  this.sound.setAttribute("controls", "none");
+  this.sound.style.display = "none";
+  document.body.appendChild(this.sound);
+  this.play = function(){
+    this.sound.play();
+  }
+  this.stop = function(){
+    this.sound.pause();
+  }
+}
+var boss;
+var b = true;
+var mySound;
+var stm;
+let bo = 50;
+let bt = 1400;
+
+const aabb = (ax,ay,aw,ah,bx,by,bw,bh) =>
+    ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
+
+function disableScroll() {
+    let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    let scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+
+    window.onscroll = function () {
+        window.scrollTo(scrollLeft, scrollTop);
+    };
+}
+
+function enableScroll() {
+    window.onscroll = function () {};
+}
+
+var level = 1;
+var myGamePiece, enP, enT, cap, w;
+var dir = 1;
+
+const bgImg = new Image();
+bgImg.src = './wr.png';
+
+const hdImg = new Image();
+hdImg.src = './hnd.png';
+
+const heroImg = new Image();
+heroImg.src = './shiv.png';
+
+const enemyImg = new Image();
+enemyImg.src = './en.png';
+
+const capImg = new Image();
+capImg.src = './cap.png';
+
+const ham = new Image();
+ham.src = './rham.png';
+
+function startGame() {
+    myGamePiece = new component(100, 100, heroImg, 350, 300);
+    enP = new component(80, 80, enemyImg, 120, 300);
+    enT = new component(80, 80, enemyImg, 80, 400);
+    cap = new component(80, 80, capImg, 90, 500);
+    w = new component(1480, 1270, bgImg, 740, 635);
+
+    mySound = new sound("stardeath.wav");
+    stm = new sound("stomp.wav");
+    boss = new sound("heavenbound.wav");
+    myGameArea.start();
+}
+
+var myGameArea = {
+    canvas : document.createElement("canvas"),
+
+    start : function() {
+        this.canvas.width = 1480;
+        this.canvas.height = 1270;
+        this.context = this.canvas.getContext("2d");
+
+        document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+
+        this.interval = setInterval(updateGameArea, 20);
+
+        window.addEventListener('keydown', function (e) {
+            myGameArea.keys = myGameArea.keys || [];
+            myGameArea.keys[e.keyCode] = true;
+        });
+
+        window.addEventListener('keyup', function (e) {
+            myGameArea.keys[e.keyCode] = false;
+        });
+    },
+
+    clear : function() {
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+};
+
+function component(width, height, img, x, y) {
+    this.width = width;
+    this.height = height;
+    this.speed = 0;
+    this.angle = 0;
+    this.moveAngle = 0;
+    this.x = x;
+    this.y = y;
+
+    this.update = function() {
+        let ctx = myGameArea.context;
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle);
+        ctx.drawImage(img, this.width / -2, this.height / -2, this.width, this.height);
+        ctx.restore();
+    };
+
+    this.newPos = function() {
+        this.angle += this.moveAngle * Math.PI / 180;
+        this.x += this.speed * Math.sin(this.angle);
+        this.y -= this.speed * Math.cos(this.angle);
+    };
+}
+
+function updateGameArea() {
+    myGameArea.clear();
+
+    myGamePiece.moveAngle = 0;
+    myGamePiece.speed = 0;
+
+    let hitEnemy =
+        aabb(myGamePiece.x, myGamePiece.y, myGamePiece.width, myGamePiece.height,
+             enP.x, enP.y, enP.width, enP.height) ||
+        aabb(myGamePiece.x, myGamePiece.y, myGamePiece.width, myGamePiece.height,
+             enT.x, enT.y, enT.width, enT.height);
+
+    if (!hitEnemy) {
+        enableScroll();
+
+        if (myGameArea.keys && (
+            myGameArea.keys[38] || myGameArea.keys[40] ||
+            myGameArea.keys[37] || myGameArea.keys[39]
+        )) {
+            disableScroll();
+        }
+
+        if (myGameArea.keys && myGameArea.keys[37]) myGamePiece.moveAngle = -2;
+        if (myGameArea.keys && myGameArea.keys[39]) myGamePiece.moveAngle = 2;
+        if (myGameArea.keys && myGameArea.keys[38]) myGamePiece.speed = 2;
+        if (myGameArea.keys && myGameArea.keys[40]) myGamePiece.speed = -2;
+
+        enP.x += dir * 2;
+        enT.x += dir * 2;
+
+        if (enP.x > bt || enP.x < bo) {
+            dir *= -1;
+        }
+    } else {
+        console.log("Collision!");
+    }
+   if (aabb(
+        myGamePiece.x, myGamePiece.y, myGamePiece.width, myGamePiece.height,
+        cap.x, cap.y, cap.width, cap.height
+    ) & level == 1) {
+        level += 1;
+        cap.x = 0;
+        cap.y = 10;
+        enP.x = 0;
+        enP.x = 0;
+        enT.x = 180
+        enT.y = 10;
+        bo = 0;
+    }
+    if (aabb(
+        myGamePiece.x, myGamePiece.y, myGamePiece.width, myGamePiece.height,
+        cap.x, cap.y, cap.width, cap.height
+    ) & level == 2) {
+        level += 1;
+        myGamePiece.x = 1000;
+        cap.x = 50;
+        cap.y = 200;
+        enP.x = 0;
+        enP.y = 200;
+        enT.x = 50;
+        enT.y = 10;
+        bo = 0;
+    }
+    if (aabb(
+        myGamePiece.x, myGamePiece.y, myGamePiece.width, myGamePiece.height,
+        cap.x, cap.y, cap.width, cap.height
+    ) & level == 3) {
+        level += 1;
+        cap.x = 20;
+        cap.y = 700;
+        enP.x = 0;
+        enP.y = 300;
+        enT.x = 0;
+        enT.y = 350;
+        bo = 0;
+    }
+    if (aabb(
+        myGamePiece.x, myGamePiece.y, myGamePiece.width, myGamePiece.height,
+        cap.x, cap.y, cap.width, cap.height
+    ) & level == 4) {
+        level += 1;
+        cap.x = 90;
+        cap.y = 1000;
+        enP.x = 100;
+        enP.y = 800;
+        enT.x = 0;
+        enT.y = 470;
+        bo = 0;
+    }
+    if (aabb(
+        myGamePiece.x, myGamePiece.y, myGamePiece.width, myGamePiece.height,
+        cap.x, cap.y, cap.width, cap.height
+    ) & level == 5) {
+        stm.play();
+        level += 1;
+        cap.x = 400;
+        cap.y = 50;
+        enP = new component(100, 100, hdImg, 400, 100);
+        enT = new component(100, 100, hdImg, 0, 270);
+        enP.speed = 4;
+        enT.speed = 4;
+        bo = 0;
+        b = false;
+    }
+    if (aabb(
+        myGamePiece.x, myGamePiece.y, myGamePiece.width, myGamePiece.height,
+        cap.x, cap.y, cap.width, cap.height
+    ) & level == 6) {
+        level += 1;
+        cap.x = 700;
+        cap.y = 800;
+        enP.x = 400;
+        enP.y = 100;
+        enP = new component(80, 80, enemyImg, 0, 400);
+        enT = new component(80, 80, enemyImg, 80, 700);
+        enP.speed = 2;
+        enT.speed = 2;
+        bo = 0;
+        b = true;
+    }
+    if (aabb(
+        myGamePiece.x, myGamePiece.y, myGamePiece.width, myGamePiece.height,
+        cap.x, cap.y, cap.width, cap.height
+    ) & level == 7) {
+        level += 1;
+        cap.x = 700;
+        cap.y = 20;
+        enP.x = 620;
+        enP.y = 800;
+        enT.x = 0;
+        enT.y = 20
+        bo = 0;
+    }
+    if (aabb(
+        myGamePiece.x, myGamePiece.y, myGamePiece.width, myGamePiece.height,
+        cap.x, cap.y, cap.width, cap.height
+    ) & level == 8) {
+        level += 1;
+        cap.x = 100;
+        cap.y = 600;
+        enP.x = 220;
+        enP.y = 300;
+        enT.x = 0;
+        enT.y = 500;
+        bo = 0;
+    }
+    if (aabb(
+        myGamePiece.x, myGamePiece.y, myGamePiece.width, myGamePiece.height,
+        cap.x, cap.y, cap.width, cap.height
+    ) & level == 9) {
+        level += 1;
+        cap.x = 50;
+        cap.y = 100;
+        enP.x = 420;
+        enP.y = 100;
+        enT.x = 0;
+        enT.y = 300;
+        bo = 0;
+    }
+    if (aabb(
+        myGamePiece.x, myGamePiece.y, myGamePiece.width, myGamePiece.height,
+        cap.x, cap.y, cap.width, cap.height
+    ) & level == 10) {
+        level += 1;
+        cap.x = 300;
+        cap.y = 1200;
+        enP.x = 670;
+        enP.y = 900;
+        enT.x = 50;
+        enT.y = 1200;
+        bo = 0;
+    }
+    if (aabb(
+        myGamePiece.x, myGamePiece.y, myGamePiece.width, myGamePiece.height,
+        cap.x, cap.y, cap.width, cap.height
+    ) & level == 11) {
+        level += 1;
+        cap.x = 150;
+        cap.y = 20;
+        enP.x = 140;
+        enP.y = 420;
+        enT.x = 70;
+        enT.y = 200;
+        bo = 0;
+    }
+    if (aabb(
+        myGamePiece.x, myGamePiece.y, myGamePiece.width, myGamePiece.height,
+        cap.x, cap.y, cap.width, cap.height
+    ) & level == 12) {
+        level += 1;
+        cap.x = 1000;
+        cap.y = 1000;
+        enP.x = new component(350, 350, ham, 0, 700);
+        enT.x = 70;
+        enT.y = 100000;
+        bo = 0;
+        enP.speed = 10;
+        b = false;
+    }
+    if (aabb(
+        myGamePiece.x, myGamePiece.y, myGamePiece.width, myGamePiece.height,
+        cap.x, cap.y, cap.width, cap.height
+    ) & level == 13) {
+        location.href = '/win.html';
+    }
+    // DRAW
+    w.update();
+    enP.update();
+    enT.update();
+    cap.update();
+
+    myGamePiece.newPos();
+    myGamePiece.update();
+
+    if (b) {
+        mySound.play();
+        boss.stop();
+    }
+    else {
+        boss.play();
+        mySound.stop();
+    }
+}
+</script>
+
+</body>
+</html>
