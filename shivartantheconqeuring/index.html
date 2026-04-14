@@ -74,6 +74,9 @@ capImg.src = './cap.png';
 const ham = new Image();
 ham.src = './rham.png';
 
+const ss new Image();
+ss.src = './luke.png';
+
 function startGame() {
     myGamePiece = new component(100, 100, heroImg, 350, 300);
     enP = new component(80, 80, enemyImg, 120, 300);
@@ -340,7 +343,85 @@ function updateGameArea() {
     if (aabb(
         myGamePiece.x, myGamePiece.y, myGamePiece.width, myGamePiece.height,
         cap.x, cap.y, cap.width, cap.height
-    ) & level == 13) {
+    ) & level == 14) {
+        level += 1;
+        cap.x = 500;
+        cap.y = 200;
+        enP = new component(80, 80, enemyImg, 20, 500);
+        enT.x = 70;
+        enT.y = 500;
+        bo = 0;
+        enP.speed = 2;
+        b = true;
+    }
+    if (aabb(
+        myGamePiece.x, myGamePiece.y, myGamePiece.width, myGamePiece.height,
+        cap.x, cap.y, cap.width, cap.height
+    ) & level == 15) {
+        level += 1;
+        cap.x = 500;
+        cap.y = 1200;
+        enP.x = 270;
+        enP.y = 600;
+        enT.x = 90;
+        enT.y = 900;
+        bo = 0;
+    }
+    if (aabb(
+        myGamePiece.x, myGamePiece.y, myGamePiece.width, myGamePiece.height,
+        cap.x, cap.y, cap.width, cap.height
+    ) & level == 16) {
+        level += 1;
+        cap.x = 200;
+        cap.y = 50;
+        enP.x = 140;
+        enP.y = 300;
+        enT.x = 50;
+        enT.y = 400;
+        bo = 0;
+    }
+    if (aabb(
+        myGamePiece.x, myGamePiece.y, myGamePiece.width, myGamePiece.height,
+        cap.x, cap.y, cap.width, cap.height
+    ) & level == 17) {
+        level += 1;
+        cap.x = 760;
+        cap.y = 850;
+        enP.x = 540;
+        enP.y = 500;
+        enT.x = 50;
+        enT.y = 600;
+        bo = 0;
+    }
+    if (aabb(
+        myGamePiece.x, myGamePiece.y, myGamePiece.width, myGamePiece.height,
+        cap.x, cap.y, cap.width, cap.height
+    ) & level == 18) {
+        level += 1;
+        cap.x = 120;
+        cap.y = 290;
+        enP.x = 440;
+        enP.y = 400;
+        enT.x = 70;
+        enT.y = 500;
+        bo = 0;
+    }
+    ) & level == 19) {
+        level += 1;
+        cap.x = 920;
+        cap.y = 990;
+        enP = new component(350, 200, luke, 100, 700);
+        enT.x = 70;
+        enT.y = 510000;
+        bo = 0;
+        b = false;
+
+    }
+
+    if (aabb(
+        myGamePiece.x, myGamePiece.y, myGamePiece.width, myGamePiece.height,
+        cap.x, cap.y, cap.width, cap.height
+    ) & level == 20) {
         location.href = 'win.html';
     }
     // DRAW
