@@ -74,7 +74,7 @@ capImg.src = './cap.png';
 const ham = new Image();
 ham.src = './rham.png';
 
-const ss new Image();
+const ss = new Image();
 ss.src = './luke.png';
 
 function startGame() {
@@ -406,11 +406,14 @@ function updateGameArea() {
         enT.y = 500;
         bo = 0;
     }
+    if (aabb(
+        myGamePiece.x, myGamePiece.y, myGamePiece.width, myGamePiece.height,
+        cap.x, cap.y, cap.width, cap.height
     ) & level == 19) {
         level += 1;
         cap.x = 920;
         cap.y = 990;
-        enP = new component(350, 200, luke, 100, 700);
+        enP = new component(350, 200, ss, 100, 700);
         enT.x = 70;
         enT.y = 510000;
         bo = 0;
